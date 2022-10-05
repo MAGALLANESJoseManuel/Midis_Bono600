@@ -4,8 +4,9 @@ output: html_notebook
 ---
 
 ```{r}
+rm(list = ls())
 library(sf)
-link='https://github.com/MAGALLANESJoseManuel/Midis_Bono600/raw/main/midisceplan.geojson'
+link='https://github.com/MAGALLANESJoseManuel/Midis_Bono600/raw/main/midisceplanmap.geojson'
 midis=sf::read_sf(link)
 
 ```
@@ -14,14 +15,15 @@ midis=sf::read_sf(link)
 names(midis)
 ```
 ```{r}
-midis$pobres=midis$porcentajePobrezaExtrema*10000
-midis$b600prop=midis$ejecutado_b600/midis$programado_b600
 str(midis)
+```
+```{r}
+midis[,c('ejecutado_yana','conteoPobres')]
 ```
 
 ```{r}
 
-h1=formula(ejecutado_yana~proporcion_presi+proporcion_congre)
+h1=formula(ejecutado_yana~proporcion_presi+proporcion_congre+porcentajePobrezaExtrema)
 reg1=glm(h1,offset = log(pobTotal),family = 'poisson',data=na.omit(midis))
 summary(reg1)
 
@@ -48,12 +50,12 @@ midis$propDisca=midis$pobDiscapacidad/midis$pobTotal
 AER::dispersiontest(reg1,alternative='greater')$ p.value<0.05
 ```
 ```{r}
-h2=formula(ejecutado_yana~proporcion_presi+proporcion_congre+ porcentajeDesnutCrónica5menos+numeroCentrosPoblados+offset(log(pobres)))
+h2=formula(ejecutado_yana~proporcion_presi+proporcion_congre+ porcentajeDesnutCronica5menos+numeroCentrosPoblados+offset(log(programado_yana)))
 ```
 
 
 ```{r}
-na.omit(midis)
+#na.omit(midis)
 rbn=MASS::glm.nb(h2,data=na.omit(midis))#,control=glm.control(maxit=50))
 
 summary(rbn)
