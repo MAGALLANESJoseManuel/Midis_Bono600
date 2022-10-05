@@ -14,10 +14,17 @@ midis=sf::read_sf(link)
 names(midis)
 ```
 ```{r}
+midis$pobres=midis$porcentajePobrezaExtrema*10000
 midis$b600prop=midis$ejecutado_b600/midis$programado_b600
-h1=formula(ejecutado_yana~proporcion_presi+proporcion_congre+porcentajePobrezaExtrema)
-reg1=glm(h1,offset = log(programado_yana),family = 'poisson',data=midis)
+str(midis)
+```
+
+```{r}
+
+h1=formula(ejecutado_yana~proporcion_presi+proporcion_congre)
+reg1=glm(h1,offset = log(pobTotal),family = 'poisson',data=na.omit(midis))
 summary(reg1)
+
 ```
 ```{r}
 exp(coef(reg1))
@@ -41,12 +48,13 @@ midis$propDisca=midis$pobDiscapacidad/midis$pobTotal
 AER::dispersiontest(reg1,alternative='greater')$ p.value<0.05
 ```
 ```{r}
-h2=formula(ejecutado_yana~proporcion_presi+proporcion_congre+porcentajePobrezaExtrema + porcentajeDesnutCrónica5menos+numeroCentrosPoblados+b600prop+offset(log(programado_yana)))
+h2=formula(ejecutado_yana~proporcion_presi+proporcion_congre+ porcentajeDesnutCrónica5menos+numeroCentrosPoblados+offset(log(pobres)))
 ```
 
 
 ```{r}
-rbn=MASS::glm.nb(h2,data=midis)#,control=glm.control(maxit=50))
+na.omit(midis)
+rbn=MASS::glm.nb(h2,data=na.omit(midis))#,control=glm.control(maxit=50))
 
 summary(rbn)
 ```
