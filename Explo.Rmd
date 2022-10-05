@@ -1,0 +1,74 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(sf)
+link='https://github.com/MAGALLANESJoseManuel/Midis_Bono600/raw/main/midisceplan.geojson'
+midis=sf::read_sf(link)
+
+```
+
+```{r}
+names(midis)
+```
+```{r}
+midis$b600prop=midis$ejecutado_b600/midis$programado_b600
+h1=formula(ejecutado_yana~proporcion_presi+proporcion_congre+porcentajePobrezaExtrema)
+reg1=glm(h1,offset = log(programado_yana),family = 'poisson',data=midis)
+summary(reg1)
+```
+```{r}
+exp(coef(reg1))
+```
+```{r}
+library(ggplot2)
+base=ggplot(data=midis,aes(x=b600prop,y=yanaProp)) 
+base + geom_point()
+```
+```{r}
+sd(midis$ejecutado_yana)/mean(midis$ejecutado_yana)
+```
+
+```{r}
+
+midis$propDisca=midis$pobDiscapacidad/midis$pobTotal
+```
+
+
+```{r}
+AER::dispersiontest(reg1,alternative='greater')$ p.value<0.05
+```
+```{r}
+h2=formula(ejecutado_yana~proporcion_presi+proporcion_congre+porcentajePobrezaExtrema + porcentajeDesnutCrónica5menos+numeroCentrosPoblados+b600prop+offset(log(programado_yana)))
+```
+
+
+```{r}
+rbn=MASS::glm.nb(h2,data=midis)#,control=glm.control(maxit=50))
+
+summary(rbn)
+```
+
+
+```{r}
+rbn=MASS::glm.nb(h2,data=midis,control=glm.control(maxit=50))
+
+summary(rbn)
+```
+```{r}
+exp(coef(rbn))
+```
+
+```{r}
+library(ggplot2)
+dotwhisker::dwplot(rbn,exp=T)+ geom_vline(
+           xintercept = 1,
+           colour = "grey60",
+           linetype = 2
+       )
+# + scale_y_discrete(labels=c("trabajo\nindependiente","analfabetismo")) + scale_color_discrete(name="Modelos para:\nCantidad de Asegurados") 
+
+```
+
