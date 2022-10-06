@@ -6,7 +6,7 @@ output: html_notebook
 ```{r}
 rm(list = ls())
 library(sf)
-link='https://github.com/MAGALLANESJoseManuel/Midis_Bono600/raw/main/midisceplanmap.geojson'
+link='midisceplanmap_repro.geojson'
 midis=sf::read_sf(link)
 
 ```
@@ -17,14 +17,22 @@ names(midis)
 ```{r}
 str(midis)
 ```
+
 ```{r}
-midis[,c('ejecutado_yana','conteoPobres')]
+library(ggplot2)
+midis$b600prop=midis$ejecutado_b600/midis$programado_b600
+base=ggplot(data=midis, aes(x=covidShare,size=proporcion_presi))
+base + geom_point(aes(y=yanaProp,color=proporcion_congre))
+```
+```{r}
+
+base + geom_point(aes(y=b600prop,color=proporcion_congre))
 ```
 
 ```{r}
 
-h1=formula(ejecutado_yana~proporcion_presi+proporcion_congre+porcentajePobrezaExtrema)
-reg1=glm(h1,offset = log(pobTotal),family = 'poisson',data=na.omit(midis))
+h1=formula(ejecutado_yana~proporcion_presi+proporcion_congre+covidShare+b600prop)
+reg1=glm(h1,offset = log(programado_yana),family = 'poisson',data=midis)
 summary(reg1)
 
 ```
@@ -50,23 +58,19 @@ midis$propDisca=midis$pobDiscapacidad/midis$pobTotal
 AER::dispersiontest(reg1,alternative='greater')$ p.value<0.05
 ```
 ```{r}
-h2=formula(ejecutado_yana~proporcion_presi+proporcion_congre+ porcentajeDesnutCronica5menos+numeroCentrosPoblados+offset(log(programado_yana)))
+h2=formula(ejecutado_yana~proporcion_presi+proporcion_congre+ covidShare+b600prop+offset(log(programado_yana)))
 ```
 
 
 ```{r}
 #na.omit(midis)
-rbn=MASS::glm.nb(h2,data=na.omit(midis))#,control=glm.control(maxit=50))
+rbn=MASS::glm.nb(h2,data=midis)#,control=glm.control(maxit=60))
 
 summary(rbn)
 ```
 
 
-```{r}
-rbn=MASS::glm.nb(h2,data=midis,control=glm.control(maxit=50))
 
-summary(rbn)
-```
 ```{r}
 exp(coef(rbn))
 ```
