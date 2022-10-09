@@ -20,7 +20,6 @@ str(midis)
 
 ```{r}
 library(ggplot2)
-midis$b600prop=midis$ejecutado_b600/midis$programado_b600
 base=ggplot(data=midis, aes(x=covidShare,size=proporcion_presi))
 base + geom_point(aes(y=yanaProp,color=proporcion_congre))
 ```
@@ -28,6 +27,7 @@ base + geom_point(aes(y=yanaProp,color=proporcion_congre))
 
 base + geom_point(aes(y=b600prop,color=proporcion_congre))
 ```
+
 
 ```{r}
 
