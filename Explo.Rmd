@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  pdf_document: default
+  html_notebook: default
 ---
 
 ```{r}
@@ -20,18 +22,55 @@ str(midis)
 
 ```{r}
 library(ggplot2)
-base=ggplot(data=midis, aes(x=covidShare,size=proporcion_presi))
-base + geom_point(aes(y=yanaProp,color=proporcion_congre))
+
+#midis
+base=ggplot(data=midis) + theme_classic()
+base + geom_point(aes(x=yanaProp,
+                      y=covidShare,
+                      color=porcentajePobrezaExtrema),alpha=0.8) +
+    scale_color_distiller(palette ='YlOrRd', direction = 1 ) + 
+    labs(x='% beneficiados',
+         y='impacto mortalidad del covid post/pre',
+         color='% Pobreza\nExtrema',
+         title = 'Bono Yanapay',
+         subtitle = "Nivel Distrital") +
+    geom_hline(yintercept = 0.5, color='grey') +
+    annotate(geom = 'text',x = 0.65,y=0.4,label='sin impacto mortalidad Covid', color='grey50') +
+    annotate(geom = 'text',x = 0.65,y=-0.95,label='sin muertes desde 2019', color='grey50') +
+    annotate(geom = "segment", x = 0.55, y = 0.45, xend = 0.55, yend = 0.3,
+         arrow = arrow(type = "closed", length = unit(0.02, "npc"))) 
+    
+    
 ```
+
+```{r}
+library(ggplot2)
+
+#midis
+base=ggplot(data=midis) + theme_classic()
+base + geom_point(aes(x=b600prop,
+                      y=covidShare,
+                      color=porcentajePobrezaExtrema),alpha=0.8) +
+    scale_color_distiller(palette ='YlOrRd', direction = 1 ) + 
+    labs(x='% beneficiados',
+         y='impacto mortalidad del covid post/pre',
+         color='% Pobreza\nExtrema',
+         title = 'Bono 600',
+         subtitle = "Nivel Distrital") +
+    geom_hline(yintercept = 0.5, color='grey') +
+    annotate(geom = 'text',x = 0.6,y=0.4,label='sin impacto mortalidad Covid', color='grey50') +
+    annotate(geom = 'text',x = 0.25,y=-0.95,label='sin muertes desde 2019', color='grey50') +
+    annotate(geom = 'text',x = 0.03,y=-0.1,label='sin cobertura del bono', color='grey50',angle=90) +
+    annotate(geom = "segment", x = 0.4, y = 0.45, xend = 0.4, yend = 0.3,
+         arrow = arrow(type = "closed", length = unit(0.02, "npc"))) 
+    
+    
+```
+
+
 ```{r}
 
-base + geom_point(aes(y=b600prop,color=proporcion_congre))
-```
-
-
-```{r}
-
-h1=formula(ejecutado_yana~proporcion_presi+proporcion_congre+covidShare+b600prop)
+h1=formula(ejecutado_yana~Pres1_PLprop+Congre_PeruLibre_prop+porcentajePobrezaExtrema+covidShare)
 reg1=glm(h1,offset = log(programado_yana),family = 'poisson',data=midis)
 summary(reg1)
 
@@ -39,26 +78,14 @@ summary(reg1)
 ```{r}
 exp(coef(reg1))
 ```
-```{r}
-library(ggplot2)
-base=ggplot(data=midis,aes(x=b600prop,y=yanaProp)) 
-base + geom_point()
-```
-```{r}
-sd(midis$ejecutado_yana)/mean(midis$ejecutado_yana)
-```
 
-```{r}
-
-midis$propDisca=midis$pobDiscapacidad/midis$pobTotal
-```
 
 
 ```{r}
 AER::dispersiontest(reg1,alternative='greater')$ p.value<0.05
 ```
 ```{r}
-h2=formula(ejecutado_yana~proporcion_presi+proporcion_congre+ covidShare+b600prop+offset(log(programado_yana)))
+h2=formula(ejecutado_yana~Pres1_PLprop+Congre_PeruLibre_prop+porcentajePobrezaExtrema+covidShare+offset(log(programado_yana)))
 ```
 
 
@@ -85,4 +112,5 @@ dotwhisker::dwplot(rbn,exp=T)+ geom_vline(
 # + scale_y_discrete(labels=c("trabajo\nindependiente","analfabetismo")) + scale_color_discrete(name="Modelos para:\nCantidad de Asegurados") 
 
 ```
+
 
